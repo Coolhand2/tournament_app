@@ -1,0 +1,12 @@
+[submodule "db"]
+	path = db
+	url = git@github.com:Coolhand2/tournament_db.git
+[submodule "api"]
+	path = api
+	url = git@github.com:Coolhand2/tournament_api.git
+[submodule "cache"]
+	path = cache
+	url = git@github.com:Coolhand2/tournament_cache.git
+[submodule "ui"]
+	path = ui
+	url = git@github.com:Coolhand2/tournament_ui.git
