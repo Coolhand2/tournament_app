@@ -1,7 +1,7 @@
 # Tournament Application
 The big repository that combines all the services into one big stack that can be re-created in an AWS account.
 
-*This is a design document, and may be ahead of where the cloudformation stacks files are.*
+**_This is a design document, and may be ahead of where the cloudformation stack files are._**
 
 ## Current Design
 
@@ -70,10 +70,10 @@ _We will be revisiting this to examine ports/protocols of inter-container commun
 
 ## Todo List
 
-[] VPC with Subnets
-[] Route53 info
-[] IAM Users Stack for future Database considerations
-[] buildspec.yml to run all the submodule stacks.
-[] Examine Outbound API ports and connections for NACLs.
-[] Examine inter-subnet communication usage for NACLs.
-[] Examine api container communications for SGs.
+-[] VPC with Subnets
+-[] Route53 info
+-[] IAM Users Stack for future Database considerations
+-[] buildspec.yml to run all the submodule stacks.
+-[] Examine Outbound API ports and connections for NACLs.
+-[] Examine inter-subnet communication usage for NACLs.
+-[] Examine api container communications for SGs.
