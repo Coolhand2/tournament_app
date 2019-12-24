@@ -11,15 +11,15 @@ The big repository that combines all the services into one big stack that can be
 When a new release begins, we will expect each team to begin a release on their own repository:
 
 ```bash
-git flow release start \<X\>
+git flow release start <X>
 ```
 
 Then, the build manager for the application can start a release and pull in all of their updates:
 
 ```bash
-git flow release start \<X\>
+git flow release start <X>
 git submodule foreach 'git pull origin release/<X>'
-git flow release publish \<X\>
+git flow release publish <X>
 ```
 
 We expect a CodeBuild pipeline to detect a new release branch and start a clean stack build of the application.
@@ -27,7 +27,7 @@ We expect a CodeBuild pipeline to detect a new release branch and start a clean 
 At this point you should notify the team to perform testing on the releasable version of the app, and push any updates to their submodules as necessary.
 
 ```bash
-git push origin release/\<X\> --v --progress
+git push origin release/<X> --v --progress
 ```
 
 So the buildmaster can then update their submodule. If you want, you can put this on a nightly build.
@@ -35,13 +35,13 @@ So the buildmaster can then update their submodule. If you want, you can put thi
 ```bash
 git submodule foreach 'git pull origin release/<X>'
 git commit -m "Nightly release"
-git push origin release/\<X\> --v --progress
+git push origin release/<X> --v --progress
 ```
 
 After checkout is complete, each team finishes their respective releases.
 
 ```bash
-git flow release finish \<X\>
+git flow release finish <X>
 git checkout master
 git push origin master --tags -v --progress
 ```
@@ -50,7 +50,7 @@ Which then allows the build master to make a gold-copy for release.
 
 ```bash
 git submodule foreach 'git pull origin master'
-git flow release finish \<X\>
+git flow release finish <X>
 git checkout master
 git push origin master --tags -v --progress
 ```
