@@ -1,7 +1,63 @@
 # Tournament Application
+
 The big repository that combines all the services into one big stack that can be re-created in an AWS account.
 
 **_This is a design document, and may be ahead of where the cloudformation stack files are._**
+
+## How to Build
+
+**_Fair Warning: These commands are not tested, and only built of a moderatly-educated guess to get to the type of development flow I wish to have._**
+
+When a new release begins, we will expect each team to begin a release on their own repository:
+
+```bash
+git flow release start \<X\>
+```
+
+Then, the build manager for the application can start a release and pull in all of their updates:
+
+```bash
+git flow release start \<X\>
+git submodule foreach 'git pull origin release/<X>'
+git flow release publish \<X\>
+```
+
+We expect a CodeBuild pipeline to detect a new release branch and start a clean stack build of the application.
+
+At this point you should notify the team to perform testing on the releasable version of the app, and push any updates to their submodules as necessary.
+
+```bash
+git push origin release/\<X\> --v --progress
+```
+
+So the buildmaster can then update their submodule. If you want, you can put this on a nightly build.
+
+```bash
+git submodule foreach 'git pull origin release/<X>'
+git commit -m "Nightly release"
+git push origin release/\<X\> --v --progress
+```
+
+After checkout is complete, each team finishes their respective releases.
+
+```bash
+git flow release finish \<X\>
+git checkout master
+git push origin master --tags -v --progress
+```
+
+Which then allows the build master to make a gold-copy for release.
+
+```bash
+git submodule foreach 'git pull origin master'
+git flow release finish \<X\>
+git checkout master
+git push origin master --tags -v --progress
+```
+
+At this point we expect the CodePipeline process that's listening on origin/master to kick off and update all our stacks for us. Update times will likely vary depending on the severity of the changes.
+
+**_I still need to answer the question of how do we separate the Test builds from the Ops updates in the stacks_**
 
 ## Current Design
 
@@ -37,7 +93,7 @@ We currently have no need to restrict outbound connections.
 
 _We will be revisiting this to examine ports/protocols of outbound-container communication and lock it down._
 
-* allow out 0.0.0.0/0
+* allow out 0.0.0.0/0:_All Ports_:_All Protocols_
 
 ##### Inbound Connections
 
@@ -70,10 +126,13 @@ _We will be revisiting this to examine ports/protocols of inter-container commun
 
 ## Todo List
 
-- [ ] VPC with Subnets
+A list of things to finish. Not as good as a Kanban board but will suffice.
+
+- [ ] VPC with Subnets **_In Progress_**
 - [ ] Route53 info
 - [ ] IAM Users Stack for future Database considerations
 - [ ] buildspec.yml to run all the submodule stacks.
 - [ ] Examine Outbound API ports and connections for NACLs.
 - [ ] Examine inter-subnet communication usage for NACLs.
 - [ ] Examine api container communications for SGs.
+- [ ] New VPC for Testing? How do we version control that?
