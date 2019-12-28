@@ -136,3 +136,37 @@ A list of things to finish. Not as good as a Kanban board but will suffice.
 - [ ] Examine inter-subnet communication usage for NACLs.
 - [ ] Examine api container communications for SGs.
 - [ ] New VPC for Testing? How do we version control that?
+
+## Management Policies
+
+This specifies the current team positions and policies governing this project.
+
+**_These policies are currently not enforced, due to this being a 1-man project._**
+
+**_The following are liable to change at any time, upon approval of project and team leaders._**
+
+### Team Positions
+
+- Project Manager (creates release schedule, and schedules for hot fixes as necessitated by Team Managers)
+- Build Manager (creates a release candidate for testing, or a final version for distribution)
+- Team Manager (schedules issues for releases)
+
+### Project Policies
+
+The following policies are in place to help clarify the process of making a major, minor, or hotfix release.
+
+**_These policies are liable to change at any time, with approval from project and team leads_**
+
+Issues will be ranked by the following levels, to induce the listed meanings. It will be up to the individual team managers to ensure proper classification of all issues.
+
+- High (represents a major bug that team leads will have to schedule with the project lead and build manager to generate an out-of-cycle hotfix release)
+- Medium (represents a minor bug that requires an investigation and ideally a resolution before the next minor release. Inclusion in a minor release will be discussed between team lead and project lead)
+- Low (represents a minor bug that requires an investigation and ideally a resolution before the next major release. Inclusion in a major release will be discussed between team lead and project lead)
+- Feature (represents a request for new functionality. May be split into further issues to ensure a timeline can be formed for inclusion into a projected release.)
+
+Releases will be initially scheduled as such:
+
+- At minimum one major release will be scheduled each year, as feature requests and minor issues permit.
+- At minimum one minor release will be scheduled each month, as major issues permit.
+- A hotfix will be scheduled as early as team manager can estimate completion of fix. It will be up to the team manager to ensure enough resources will be assigned to the issue to resolve it quickly and efficiently.
+  - A suggestion is for the team lead to manage a list of team members that can be pulled to address the issue.
