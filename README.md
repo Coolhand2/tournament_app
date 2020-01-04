@@ -34,7 +34,7 @@ So the buildmaster can then update their submodule. If you want, you can put thi
 
 ```bash
 git submodule foreach 'git pull origin release/<X>'
-git commit -m "Nightly release"
+git commit -am "Nightly release"
 git push origin release/<X> --v --progress
 ```
 
@@ -61,81 +61,23 @@ At this point we expect the CodePipeline process that's listening on origin/mast
 
 ## Current Design
 
-* See vpc-stack.yml
+* S3 Bucket serving a static website
+* API Gateway/Lambda backend
+* RDS Instance
+* ElastiCache Instance
 
-We're currently attempting to build a simple VPC with an onion of security layers.
+Currently the only thing this end of the project will do is setup the CI/CD pipeline to take push updates from it's own repository (allowing us to make automated releases.)
 
-### Subnet Design
+The API Backend will manage it's own RDS, and DynamoDB Cache, along with a build process to convert the code to API Gateway/Lambda combos.
 
-There will be eventually four subnets, one for each AZ in us-west-2. Currently the stack is only listing 3.
-
-**Public Subnets:**
-
-* 10.0.0.0/24 (us-west-2a) _Name: Tournament Public A_
-* 10.0.1.0/24 (us-west-2b) _Name: Tournament Public B_
-* 10.0.2.0/24 (us-west-2c) _Name: Tournament Public C_
-* 10.0.3.0/24 (us-west-2d) _Name: Tournament Public D_
-
-**Private Subnets:**
-
-* 10.1.0.0/16 (us-west-2a) _Name: Tournament Private A_
-* 10.2.0.0/16 (us-west-2b) _Name: Tournament Private B_
-* 10.3.0.0/16 (us-west-2c) _Name: Tournament Private C_
-* 10.4.0.0/16 (us-west-2d) _Name: Tournament Private D_
-
-### Security Layers
-
-#### NACLs
-
-##### Outbound Connections
-
-We currently have no need to restrict outbound connections.
-
-_We will be revisiting this to examine ports/protocols of outbound-container communication and lock it down._
-
-* allow out 0.0.0.0/0:_All Ports_:_All Protocols_
-
-##### Inbound Connections
-
-The UI will be served from an S3 bucket, which removes our need to open up port 80/443 for the frontend. We will be requiring SSL Client-Cert verification for API calls however, which still requires us to open port 443. We also wish to ensure all public/private subnet is explicitly allowed through.
-
-_We will be revisiting this to examine ports/protocols of inter-container communication and lock it down._
-
-* 0.0.0.0/0:443:_TCP_
-* 10.0.0.0/24:_All Ports_:_All Protocols_
-* 10.0.1.0/24:_All Ports_:_All Protocols_
-* 10.0.2.0/24:_All Ports_:_All Protocols_
-* 10.0.3.0/24:_All Ports_:_All Protocols_
-* 10.1.0.0/16:_All Ports_:_All Protocols_
-* 10.2.0.0/16:_All Ports_:_All Protocols_
-* 10.3.0.0/16:_All Ports_:_All Protocols_
-* 10.4.0.0/16:_All Ports_:_All Protocols_
-
-#### Security Groups
-
-A design choice has to be made here. Do we want individual security groups for every instance we launch, or do we wish to build generic ones that can be applied in groups, based on functionality needs?
-
-As of right now, allowing containers to communicate with eachother as necessary for heartbeat and others, we will have at least a SG that allows for that.
-
-_We will be revisiting this to examine ports/protocols of inter-container communication, categorize them into Securiy Groups, and lock down the VPC._
-
-* _All Protocols_:_All Ports_:_This Security Group_ Tournament Default Group
-* _TCP_:_3306_:_10.0.0.0/8_ Potential Future MySQL only security group.
-* _TCP_:_443_:_10.0.0.0/8_ Potential Future SSL only security group.
-* _TCP_:_11211_:_10.0.0.0/8_ Potential Future Memcached only security group.
+The UI Frontend will manage it's own S3 bucket and build process. Likely also inducing a Route53 update as well. We shall see.
 
 ## Todo List
 
-A list of things to finish. Not as good as a Kanban board but will suffice.
+- [ ] Create starting-stack file (CI/CD Pipeline Setup)
+  - Is there a way to auto-start that pipeline once it's done being setup?
+  - Do you use CodeCommit for private applications not yet published (instead of GitHub), and push to that to start the pipeline?
 
-- [ ] VPC with Subnets **_In Progress_**
-- [ ] Route53 info
-- [ ] IAM Users Stack for future Database considerations
-- [ ] buildspec.yml to run all the submodule stacks.
-- [ ] Examine Outbound API ports and connections for NACLs.
-- [ ] Examine inter-subnet communication usage for NACLs.
-- [ ] Examine api container communications for SGs.
-- [ ] New VPC for Testing? How do we version control that?
 
 ## Management Policies
 
