@@ -4,80 +4,27 @@ The big repository that combines all the services into one big stack that can be
 
 **_This is a design document, and may be ahead of where the cloudformation stack files are._**
 
-## How to Build
-
-**_Fair Warning: These commands are not tested, and only built of a moderatly-educated guess to get to the type of development flow I wish to have._**
-
-When a new release begins, we will expect each team to begin a release on their own repository:
-
-```bash
-git flow release start <X>
-```
-
-Then, the build manager for the application can start a release and pull in all of their updates:
-
-```bash
-git flow release start <X>
-git submodule foreach 'git pull origin release/<X>'
-git flow release publish <X>
-```
-
-We expect a CodeBuild pipeline to detect a new release branch and start a clean stack build of the application.
-
-At this point you should notify the team to perform testing on the releasable version of the app, and push any updates to their submodules as necessary.
-
-```bash
-git push origin release/<X> --v --progress
-```
-
-So the buildmaster can then update their submodule. If you want, you can put this on a nightly build.
-
-```bash
-git submodule foreach 'git pull origin release/<X>'
-git commit -am "Nightly release"
-git push origin release/<X> --v --progress
-```
-
-After checkout is complete, each team finishes their respective releases.
-
-```bash
-git flow release finish <X>
-git checkout master
-git push origin master --tags -v --progress
-```
-
-Which then allows the build master to make a gold-copy for release.
-
-```bash
-git submodule foreach 'git pull origin master'
-git flow release finish <X>
-git checkout master
-git push origin master --tags -v --progress
-```
-
-At this point we expect the CodePipeline process that's listening on origin/master to kick off and update all our stacks for us. Update times will likely vary depending on the severity of the changes.
-
-**_I still need to answer the question of how do we separate the Test builds from the Ops updates in the stacks_**
-
 ## Current Design
 
 * S3 Bucket serving a static website
 * API Gateway/Lambda backend
 * RDS Instance
-* ElastiCache Instance
+* DynamoDB Instance with TTL (acts like a cache)
 
-Currently the only thing this end of the project will do is setup the CI/CD pipeline to take push updates from it's own repository (allowing us to make automated releases.)
+### CI/CD Pipeline
 
-The API Backend will manage it's own RDS, and DynamoDB Cache, along with a build process to convert the code to API Gateway/Lambda combos.
-
-The UI Frontend will manage it's own S3 bucket and build process. Likely also inducing a Route53 update as well. We shall see.
+The pipeline-stack.yml file will handle the initial setup of the CodeBuild pipeline that will allow for the API code to be translated into Api Gateway Pathways and Lambda functions; as well as allowing for the UI code to be translated into an RIA (via nodejs compilation) and stored into it's own S3 bucket.
 
 ## Todo List
 
-- [ ] Create starting-stack file (CI/CD Pipeline Setup)
-  - Is there a way to auto-start that pipeline once it's done being setup?
-  - Do you use CodeCommit for private applications not yet published (instead of GitHub), and push to that to start the pipeline?
+* [ ] Create pipeline-stack file (CI/CD Pipeline Setup)
+* [ ] Create api-stack file (Translate code into API Gateway/Lambda, maintain RDS instance and DynamoDB Cache)
+* [ ] Create ui-stack file (Compile Code into something that can be stored into an s3 bucket for static dissemination)
 
+### Questions
+
+* Is there a way to auto-start the pipeline once it's done being setup?
+* Would you use CodeCommit for private applications (instead of GitHub), and push to that to start the pipeline?
 
 ## Management Policies
 
@@ -85,13 +32,13 @@ This specifies the current team positions and policies governing this project.
 
 **_These policies are currently not enforced, due to this being a 1-man project._**
 
-**_The following are liable to change at any time, upon approval of project and team leaders._**
+**_The following are liable to change at any time, upon gaining other people to handle certain functions; pending their feedback, of course._**
 
 ### Team Positions
 
-- Project Manager (creates release schedule, and schedules for hot fixes as necessitated by Team Managers)
-- Build Manager (creates a release candidate for testing, or a final version for distribution)
-- Team Manager (schedules issues for releases)
+* Project Manager (creates release schedule, and schedules for hot fixes as necessitated by Team Managers)
+* Build Manager (creates a release candidate for testing, or a final version for distribution)
+* Team Manager (schedules issues for releases)
 
 ### Project Policies
 
@@ -103,16 +50,16 @@ The following policies are in place to help clarify the process of making a majo
 
 Issues will be ranked by the following levels, to induce the listed meanings. It will be up to the individual team managers to ensure proper classification of all issues.
 
-- High (represents a major bug that team leads will have to schedule with the project lead and build manager to generate an out-of-cycle hotfix release)
-- Medium (represents a minor bug that requires an investigation and ideally a resolution before the next minor release. Inclusion in a minor release will be discussed between team lead and project lead)
-- Low (represents a minor bug that requires an investigation and ideally a resolution before the next major release. Inclusion in a major release will be discussed between team lead and project lead)
-- Feature (represents a request for new functionality. May be split into further issues to ensure a timeline can be formed for inclusion into a projected release.)
+* High (represents a major bug that team leads will have to schedule with the project lead and build manager to generate an out-of-cycle hotfix release)
+* Medium (represents a minor bug that requires an investigation and ideally a resolution before the next minor release. Inclusion in a minor release will be discussed between team lead and project lead)
+* Low (represents a minor bug that requires an investigation and ideally a resolution before the next major release. Inclusion in a major release will be discussed between team lead and project lead)
+* Feature (represents a request for new functionality. May be split into further issues to ensure a timeline can be formed for inclusion into a projected release.)
 
 #### Issue Statuses
 
-- New (submitted by a user, awaiting verification)
-- Verified (verified as unintended result of taking a specific action, or as a feature not yet implemented.)
-- Closed (a fix has been included in a release.)
+* New (submitted by a user, awaiting verification)
+* Verified (verified as unintended result of taking a specific action, or as a feature not yet implemented.)
+* Closed (a fix has been included in a release.)
 
 #### Issue Tags
 
@@ -122,7 +69,7 @@ A special "on-hold" tag will be utilized for issues that have an external depend
 
 #### Issue Management and Release Schedule relationships
 
-- [ ] **_TODO: Clean up this section_**
+* [ ] **_TODO: Clean up this section_**
 
 A new major release should not be scheduled (at project lead discretion) while there are still open issues for the latest major release. (Open issues are identified as verified issues without the special "on-hold" tag.)
 
@@ -142,15 +89,15 @@ A scheduled major release will never guarantee the inclusion of a feature. It sh
 
 It will be assumed that if the release tagged on an issue is a previous version, and the status of the issue is not closed, that the issue still affects the functionality of the latest version.
 
-Issues will be ranked (as previously mentioned) by the respective team lead. 
+Issues will be ranked (as previously mentioned) by the respective team lead.
 
 If the issue requires updates via multiple teams, the project manager will work with the team managers to ensure the issue is broken down into it's constituent pieces, that teams receive their own issues, and that they are linked appropriately to the parent issue for tracking purposes.
- 
+
 #### Release Schedules
 
 Releases will be initially scheduled as such:
 
-- At minimum one major release will be scheduled each year, as feature requests and minor issues permit.
-- At minimum one minor release will be scheduled each month, as major issues permit.
-- A hotfix will be scheduled as early as team manager can estimate completion of fix. It will be up to the team manager to ensure enough resources will be assigned to the issue to resolve it quickly and efficiently.
-  - A suggestion is for the team lead to manage a list of team members that can be pulled to address the issue.
+* At minimum one major release will be scheduled each year, as feature requests and minor issues permit.
+* At minimum one minor release will be scheduled each month, as major issues permit.
+* A hotfix will be scheduled as early as team manager can estimate completion of fix. It will be up to the team manager to ensure enough resources will be assigned to the issue to resolve it quickly and efficiently.
+  * A suggestion is for the team lead to manage a list of team members that can be pulled to address the issue.
